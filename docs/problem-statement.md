@@ -1,71 +1,106 @@
 # Problem statement — Inteligentne Laboratorium
 
-Źródła: transkrypcja opisu problemu hackathonu „Inteligentne Laboratorium" oraz materiał
-uzupełniający „Najważniejsze informacje do projektu".
+Laboratorium zakładowe kontroli jakości: jeden budynek, trzy pracownie, akredytacja
+PN-EN ISO/IEC 17025 i wyniki badań, na których opiera się decyzja o dopuszczeniu wyrobu.
+Nadzór nad wyposażeniem, odczynnikami i dokumentacją prowadzony jest papierowo i w Excelu.
+To jest źródło problemu — nie brak kompetencji, lecz brak nośnika, który sam pilnuje terminów.
 
-Treść poniżej jest dosłowna — bez interpretacji, uzupełnień i założeń. Zachowano pisownię
-oryginałów; ujednolicono wyłącznie formatowanie list i nagłówków.
+## 1. Jak laboratorium działa dziś
 
----
+| Wymiar | Stan obecny | Konsekwencja |
+|---|---|---|
+| Lokalizacja | jedno piętro: trzy pracownie (wytrzymałościowa, paliw, analityczna), biuro, specjaliści, kierownik | nadzór rozproszony fizycznie, obieg informacji „nogami" |
+| Identyfikacja sprzętu | kod z literą pracowni (np. `/A`), naklejka z miesiącem i rokiem ostatniego i następnego wzorcowania | naklejka nie mówi, czy termin już minął w tym miesiącu |
+| Odpowiedzialność | brygadzista na pracownię (3), specjaliści, kierownik | niedopatrzenie obciąża specjalistę |
+| Ewidencja | segregatory, karty papierowe, arkusze Excel; brak systemu klasy LIMS | ręczne sprawdzanie, kontrola wyrywkowa, dane w kilku miejscach |
+| Dostęp | przypisanie pracownika do sprzętu w karcie ewidencji; zakaz używania sprzętu innych pracowni | uprawnienia trzeba egzekwować, nie tylko deklarować |
+| Dokumenty | klasy: wewnętrzne, poufne, zastrzeżone; zaostrzone wymagania cyberbezpieczeństwa | jedna wersja obowiązująca, reszta nieosiągalna |
 
-## 1. Treść zadania
+## 2. Meritum: trzy zegary
 
-### Historia problemu
+Każdy element laboratorium ma termin, po którym przestaje być wiarygodny. Wszystkie trzy
+zegary są dziś pilnowane ręcznie, w trzech różnych rejestrach.
 
-Wyobraźcie sobie laboratorium przemysłowe, w którym każdego dnia wykonywane są badania
-i pomiary służące kontroli jakości. Aby wyniki były wiarygodne, laboratorium musi
-odpowiednio nadzorować wykorzystywane wyposażenie.
+### 2.1 Przyrząd → wzorcowanie i sprawdzenie
 
-Urządzenia pomiarowe wymagają:
+- Cykle wzorcowań: 1, 2, 3 lub 4 lata — zależnie od przyrządu.
+- Realizacja u dostawcy: od tygodnia do dwóch miesięcy. Część sprzętu (piece, analizatory)
+  wzorcowana jest na miejscu, część wyjeżdża.
+- Równolegle biegną okresowe sprawdzenia (wagi, temperatury).
+- Brak elektronicznej ewidencji: harmonogram istnieje tylko na papierze.
 
-- Okresowych wzorcowań
-- Regularnych sprawdzeń
-- Prowadzenia dokumentacji potwierdzającej ich stan
+### 2.2 Materiał → data ważności i zapas
 
-Każde urządzenie ma swoją historię, terminy oraz dokumenty, które powinny być zawsze
-aktualne i łatwo dostępne.
+- Odczynniki i certyfikowane materiały odniesienia (CRM) mają daty ważności; materiały
+  sprowadzane z zagranicy wymagają wyprzedzenia nawet półrocznego.
+- Potrzebne jest przewidywanie wyczerpania zapasu z planu badań i szacowanego zużycia
+  w ujęciu okresowym (miesiące), a nie codzienne ewidencjonowanie mililitrów.
+- Zakup to łańcuch: oferta → zapotrzebowanie → zamówienie → podpis prezesa → dostawa.
+  Reakcja po fakcie jest spóźniona o cały ten łańcuch.
 
-### Wyzwanie
+### 2.3 Pomiar → wynik w normie
 
-**Jak usprawnić i zdigitalizować nadzór nad wyposażeniem laboratorium, wzorcowaniami
-i powiązaną dokumentacją?**
+- Wynik trafia do brudnopisu, potem do zeszytu badań, potem ręcznie do arkusza Excel.
+  Każde przepisanie to okazja do błędu, a kontrola jest wyrywkowa.
+- Formuły w arkuszach są zablokowane, ale nikt nie wymusza reakcji na wynik poza normą
+  ani poza zakresem pomiarowym.
+- Wynik poza zakresem wymaga powtórki (wykluczenie błędu laboranta), a dalej decyzji:
+  przekwalifikowanie na inną markę albo aktualizacja zakresu pomiarowego.
 
-Celem rozwiązania jest:
+## 3. Cel
 
-- Ograniczenie pracy manualnej
-- Zmniejszenie ryzyka błędów
-- Wyeliminowanie możliwości wykorzystania nieaktualnych informacji
+Odpowiedź na trzy pytania bez otwierania segregatora i bez chodzenia po pracowniach:
 
-## 2. Struktura i organizacja laboratorium
+1. **Czy mogę zmierzyć tym przyrządem?** — ważność wzorcowania, sprawdzeń i przypisanie
+   pracownika, w czasie krótszym niż przeczytanie naklejki.
+2. **Co wymaga reakcji w najbliższych tygodniach?** — jeden widok terminów: wzorcowania,
+   przeglądy, ważność odczynników i CRM, z wyprzedzeniem dopasowanym do czasu realizacji.
+3. **Kto i kiedy zmienił termin, wynik, dokument?** — historia odtwarzalna na potrzeby
+   audytu 17025.
 
-- **Jedna lokalizacja:** laboratorium zakładowe mieści się w jednym budynku, na jednym piętrze (podział na osobne pomieszczenia/pracownie, biuro, specjalistów i kierownika).
-- **Trzy pracownie:** wytrzymałościowa, paliw oraz analityczna; każda ma własny sprzęt oznaczony kodem z literą pracowni (np. `/A`) oraz własnego brygadzistę (3 brygadzistów – po jednym na pracownię), a także specjalistów i kierownika.
-- **Uprawnienia i dostęp:** obowiązuje akredytacja (norma 17025) oraz zaostrzone podejście do cyberbezpieczeństwa i podziału dokumentów (wewnętrzne, poufne, zastrzeżone). Pracownicy nie mogą używać sprzętu z innych pracowni ani sprzętu, do którego nie są przypisani w karcie ewidencji.
-- **Szersze zastosowanie:** rozwiązanie powinno być uniwersalne dla laboratoriów akredytowanych o podobnych wymaganiach (nie tylko pod kątem jednej konkretnej firmy, ale też pod kątem przyszłych wdrożeń/prezentacji).
+Skutki, które mają zniknąć: pomiar przyrządem po terminie, badanie na przeterminowanym
+materiale, utracony zapas, błąd przepisywania, decyzja kierownika na podstawie nieaktualnego
+arkusza.
 
-## 3. Główne problemy i obszary do zaadresowania
+## 4. Kierunki rozwiązania zgłoszone z laboratorium
 
-1. **Ręczne pilnowanie terminów wzorcowań i przeglądów:**
-   - harmonogramy są prowadzone ręcznie, a naklejki na sprzęcie zawierają często tylko miesiąc i rok (ostatniego i następnego wzorcowania).
-   - różne częstotliwości wzorcowań (np. co rok, co 2, 3 lub 4 lata) oraz różne czasy realizacji u zewnętrznych dostawców (od tygodnia do nawet 2 miesięcy).
-   - część sprzętu (np. piece, analizatory) jest wzorcowana na miejscu, a część wysyłana; dodatkowo prowadzone są okresowe sprawdzenia (np. wagi, temperatury).
-   - brak elektronicznej ewidencji – dane są w segregatorach / kartach papierowych, co wymusza ręczne sprawdzanie i rodzi ryzyko niedopatrzeń (odpowiedzialność spada na specjalistę).
-2. **Odczynniki chemiczne i certyfikowane materiały odniesienia (CRM):**
-   - kluczowe są **daty ważności** (np. na materiały sprowadzane z zagranicy czeka się długo, więc przydaje się wyprzedzenie nawet półroczne) oraz **przewidywanie wyczerpania zapasów** na podstawie planu badań i szacowanego zużycia (np. w ujęciu okresowym / w miesiącach, a nie codziennym wpisywaniu każdego mililitra).
-   - długi proces zakupowy (oferta, zapotrzebowanie, zamówienie, podpis prezesa, oczekiwanie na dostawę), dlatego błędy i brak reakcji z wyprzedzeniem są dotkliwe.
-3. **Przepływ danych, wyniki badań i walidacja zakresów:**
-   - pracownicy notują wyniki w zeszytach/brudnopisach, przenoszą do zeszytu badań, a potem ręcznie wpisują do arkuszy Excel (brak systemu klasy LIMS) – ryzyko błędów przy przepisywaniu i kontroli wyrywkowej.
-   - w Excelu arkusze obliczeniowe są chronione (komórki zablokowane przed zmianą formuł, wpisuje się tylko dane), ale pracownicy nie zawsze reagują na wyniki poza normą / poza zakresem.
-   - przy wyniku poza normą / poza zakresem pomiarowym konieczna jest powtórka analizy (wykluczenie błędu laboranta), a następnie ewentualne działania (np. przekwalifikowanie na inną markę, jeśli dotyczy wyrobu/cementu) lub aktualizacja zakresów pomiarowych (np. na podstawie próbek).
+| Kierunek | Co daje | Warunek działania |
+|---|---|---|
+| Harmonogram z powiadomieniami | standard miesięczny, dla wybranych pozycji wyprzedzenie 1–12 miesięcy (np. pół roku) | termin musi być policzony z danych, a nie wpisany raz |
+| Kody QR + telefony służbowe | skan prowadzi do karty urządzenia, historii lub formularza wpisu | uprawnienia: blokada dla nieuprawnionych, odrębny widok dla praktykantów |
+| Cyfrowe wpisy i skany | sprawdzenie/wzorcowanie zapisane od razu, z błędem pomiaru i niepewnością ze świadectwa, zdjęciem dokumentu | kierownik widzi status bez obchodu pracowni |
+| Walidacja zakresów i alerty | podświetlenie wartości poza przedziałem, wymuszona reakcja | wpisu nie da się zamknąć bez rozstrzygnięcia |
 
-## 4. Propozycje funkcji i kierunki rozwoju projektu
+## 5. Stanowisko projektowe
 
-- **Interaktywny harmonogram i powiadomienia z wyprzedzeniem:**
-  - podgląd urządzeń/pracowni i zbliżających się terminów (wzorcowań, przeglądów okresowych, dat ważności odczynników/CRM), najlepiej w widoku tabelarycznym / według pracowni i terminów.
-  - powiadomienia wyprzedzające (np. miesięczne standardowo, a dla wybranych pozycji/sprzętu/materiałów z możliwością ustawienia wyprzedzenia w miesiącach, np. 1–12 miesięcy, np. pół roku).
-- **Szybki dostęp przez kody QR i telefony służbowe:**
-  - pracownicy mają telefony służbowe, a urządzenia mają kody/identyfikatory – skanowanie kodu QR mogłoby prowadzić do informacji o urządzeniu, historii/karty czy formularza sprawdzenia/wpisu (z uwzględnieniem uprawnień użytkownika – np. blokada dla osób nieuprawnionych lub odrębny widok/test dla praktykantów).
-- **Cyfryzacja wpisów i raportów (zamiast szukania po segregatorach):**
-  - możliwość szybkiego zapisania faktu wykonania sprawdzenia/wzorcowania czy wprowadzenia kluczowych danych (np. błędu pomiaru i niepewności ze świadectwa wzorcowania, skanu/zdjęcia dokumentu) tak, aby osoba zarządzająca widziała status i historię bez chodzenia po pracowniach.
-- **Walidacja danych i automatyczne alerty w arkuszach/formularzach:**
-  - sprawdzanie zakresów/norm (np. podświetlanie wartości poza dopuszczalnym przedziałem) i wymuszanie reakcji/powtórzenia pomiaru przed zamknięciem wpisu.
+Ramy, w których te kierunki mają sens — i które wyznaczają architekturę:
+
+- **Jedna abstrakcja: okno ważności.** Przyrząd, odczynnik, dokument i uprawnienie
+  pracownika to ten sam wzorzec: „ważne od–do, na podstawie jakiego zdarzenia". Termin jest
+  liczony, nie przechowywany jako edytowalne pole. Jedno miejsce może się rozjechać
+  z rzeczywistością — więc nie tworzymy drugiego.
+- **Rejestr i zegar, nie LIMS.** System nie liczy wyników badań; pilnuje, czy wolno mierzyć
+  i czy dokument jest aktualny. Wyniki zostają tam, gdzie są, dopóki walidacja zakresów nie
+  wejdzie do zakresu.
+- **Uprawnienia z danych, nie z UI.** Pracownia i przypisanie w karcie ewidencji decydują
+  o dostępie; ukrycie przycisku nie jest kontrolą dostępu.
+- **Blokada musi być nieomijalna.** Przyrząd po terminie nie przyjmuje wpisu wyniku.
+  Jeśli da się obejść, wracamy do naklejki — tylko droższej.
+- **Wdrożenie tylko z importem.** Jeśli istniejącej ewidencji nie da się wciągnąć
+  z arkusza, nikt nie przepisze segregatorów ręcznie, a system umrze jako drugi rejestr.
+- **Uniwersalność od pierwszego dnia.** Laboratorium = tenant, pracownia = jednostka,
+  typ przyrządu = słownik. Rozwiązanie ma być wdrażalne w kolejnych laboratoriach
+  akredytowanych, nie tylko w tym jednym.
+
+## 6. Poza zakresem (teraz)
+
+Akwizycja danych z przyrządów, integracja z LIMS, podpisy kwalifikowane/eIDAS,
+rozliczanie kosztów wzorcowań i zakupów.
+
+## 7. Pytania otwarte
+
+1. Kto potwierdza wykonanie sprawdzenia: brygadzista, specjalista, czy obaj (wpis + akceptacja)?
+2. Czy sprawdzenie poza kryterium blokuje przyrząd natychmiast, czy dopiero po decyzji specjalisty?
+3. Jaka jest skala startowa: liczba przyrządów, pozycji materiałowych i pracowników?
+4. Czy wyniki badań wchodzą w zakres pierwszej wersji, czy tylko nadzór nad wyposażeniem
+   i materiałami?

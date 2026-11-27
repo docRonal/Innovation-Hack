@@ -1,13 +1,12 @@
 # Inteligentne Laboratorium
 
-Hackathon: digitalizacja nadzoru nad wyposażeniem pomiarowym laboratorium.
+Hackathon: digitalizacja nadzoru nad wyposażeniem pomiarowym laboratorium akredytowanego
+(PN-EN ISO/IEC 17025).
 
 ## Dokumentacja
 
 | Dokument | Zawartość |
 |---|---|
-| [docs/problem-statement.md](docs/problem-statement.md) | Cały problem statement: treść zadania, organizacja, problemy, proponowane funkcje (dosłownie ze źródeł) |
+| [docs/problem-statement.md](docs/problem-statement.md) | Problem statement: stan obecny, trzy zegary (wzorcowania, ważność materiałów, wyniki), cel, kierunki, stanowisko projektowe, pytania otwarte |
 
-Konwencja: README jest indeksem; treść merytoryczna żyje w `docs/problem-statement.md`.
-Dokument zawiera wyłącznie dostarczone materiały — bez dopisywania wymagań, modelu danych
-i architektury poza tym, co wynika wprost ze źródeł.
+README jest indeksem; treść merytoryczna żyje w `docs/problem-statement.md`.
