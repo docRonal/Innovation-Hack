@@ -24,7 +24,7 @@ może zmienić. F1–F9 to funkcje z tabeli w 01 §3.3.
 | D10 | QR i tag NFC zawierają ten sam link `https://<serwer>/e/<public_id>` | QR czyta każdy aparat i drukarka etykiet, a zbliżenie telefonu do tagu (NDEF URI) otwiera tę samą kartę bez skanowania; kod `121/A` się nie nadaje (ma „/”, numery powtarzają się między pracowniami); tag to tylko wskaźnik, dostęp nadal wymaga logowania i uprawnień | propozycja |
 | D11 | Adres serwera ustawiany w aplikacji mobilnej przy pierwszym uruchomieniu | jedna aplikacja w sklepie, wiele firm, każda z własnym serwerem (D4) | propozycja |
 | D12 | Druki formalne (karta urządzenia z historią, raport walidacji) generuje backend przez binarkę `typst`; etykiety QR zostają w przeglądarce | PDF jest zapisem (17025 7.5.2) — musi powstać po stronie serwera, niezależnie od przeglądarki użytkownika; jedna binarka zamiast przeglądarki w obrazie, szablony `.typ` podglądane tym samym narzędziem co produkcja | propozycja |
-| D13 | Wykresy F10 liczone z wyników badań (`TestResult`), bez nowej encji „próbka”; raport F11 to PDF zapisany jako załącznik + powiadomienie dla kierownika | jedno źródło pomiarów dla kontroli zakresu, wykresu i raportu; „wysyłka” bez nowego kanału — dzwonek, opcjonalnie e-mail (T17) | propozycja |
+| D13 | Wykresy F10 liczone z wyników badań (`TestResult`), bez nowej encji „próbka”; raport F11 to PDF zapisany jako załącznik + powiadomienie dla kierownika | jedno źródło pomiarów dla kontroli zakresu, wykresu i raportu; „wysyłka” bez nowego kanału — dzwonek w aplikacji | propozycja |
 | D14 | OCR świadectwa przez zewnętrzne API (model multimodalny/LLM albo OCR, np. Qwen-VL), wyłączony domyślnie | pełny „raport wzorcowania” ma wiele stron i tabel, a przepisywanie firmy, numeru, miesiąca i punktów zajmuje czas; wynik jest tylko szkicem pól — admin zatwierdza i decyduje OK / NIE OK (17025 7.5.2), oryginał skanu zostaje w plikach; klucz zostaje na serwerze, a dokument opuszcza go tylko w tej jednej, świadomej operacji | propozycja |
 
 ---
@@ -45,7 +45,6 @@ flowchart LR
     F[("Pliki<br/>skany, zdjęcia")]
   end
   FCM["Firebase Cloud Messaging<br/>push, opcjonalnie"]
-  SMTP["SMTP<br/>e-mail, opcjonalnie"]
   W --> P
   M --> P
   P --> A
@@ -53,7 +52,6 @@ flowchart LR
   A --> F
   K --> D
   K -.-> FCM
-  K -.-> SMTP
   FCM -.-> M
 ```
 
@@ -62,7 +60,7 @@ flowchart LR
 | Frontend | React + TypeScript + Vite, shadcn/ui (Tailwind CSS, Radix UI), TanStack Query | ekrany biura i pracowni — jeden kod |
 | Aplikacja mobilna | Capacitor 8 + pluginy: skaner kodów, NFC, aparat, push | ten sam frontend na Androidzie i iOS |
 | API | FastAPI, SQLAlchemy 2, Alembic, Pydantic v2 | logika, uprawnienia, historia zmian, pliki |
-| Worker | ten sam kod Pythona, osobny proces | przeliczanie terminów, powiadomienia, wysyłka push i e-mail |
+| Worker | ten sam kod Pythona, osobny proces | przeliczanie terminów, powiadomienia, wysyłka push |
 | Baza | PostgreSQL 17 | dane i historia zmian |
 | Pliki | wolumen dyskowy | skany świadectw, zdjęcia kart |
 | Proxy | Caddy | HTTPS, serwowanie frontendu, `/api` → API |
@@ -114,7 +112,7 @@ erDiagram
 | `TestResult` | `parameter_id`, `sample_label`, `value`, `min_snapshot`, `max_snapshot`, `in_range`, `repeat_of_id`, `created_by`, `created_at` — to są „pomiary z próbek” dla wykresów F10 | F9, F10, 7.5.2 |
 | `Report` | `period_from`, `period_to`, `parameter_ids`, `attachment_id` (PDF), `created_by`, `created_at` | F11 |
 | `Notification` | `user_id`, `kind`, `ref_type`, `ref_id`, `title`, `due`, `dedupe_key`, `read_at`, `resolved_at`; unikalne `(user_id, dedupe_key)` | F3 |
-| `NotificationRule` | `kind` → `recipients` (role, czy wg zakresu pracowni), `channels` (`IN_APP`, `PUSH`, `EMAIL`), `enabled` | F3, 01 §3.1 |
+| `NotificationRule` | `kind` → `recipients` (role, czy wg zakresu pracowni), `channels` (`IN_APP`, `PUSH`), `enabled` | F3, 01 §3.1 |
 | `DeviceToken` | `user_id`, `platform`, `token` (FCM) | F3 (push) |
 | `Attachment` | `owner_type`, `owner_id`, `lab_id` (do kontroli dostępu), `filename`, `content_type`, `size_bytes`, `sha256`, `storage_key`, `uploaded_by` | F4, F5 |
 | `Setting` | `key` → `value` (JSON) | 01 §3.1 |
@@ -542,7 +540,7 @@ backend/app/
   reagents/          # odczynniki, partie, spisy
   results/           # parametry i wyniki badań
   schedule/          # DueItem, /schedule
-  notifications/     # reguły, powiadomienia, kanały (push, e-mail)
+  notifications/     # reguły, powiadomienia, kanał push
   print/             # druki PDF: render.py (binarka typst), service.py, router.py,
                      # templates/*.typ, fonts/ (DejaVu), testy w tests/print/
   worker.py          # pętla workera, --once, --today
@@ -622,7 +620,7 @@ przeglądarka tylko otwiera gotowy PDF.
 zbudowany frontend, `/api` → `api`). Ten sam zestaw działa na serwerze w zakładzie i w chmurze.
 
 Zmienne środowiskowe: `DATABASE_URL`, `CORS_ORIGINS`, `PUBLIC_BASE_URL` (do linków w QR i NFC),
-`FILES_DIR`, opcjonalnie `FCM_CREDENTIALS_FILE`, `SMTP_*` oraz OCR: `OCR_API_URL`,
+`FILES_DIR`, opcjonalnie `FCM_CREDENTIALS_FILE` oraz OCR: `OCR_API_URL`,
 `OCR_API_KEY`, `OCR_MODEL`, `OCR_TIMEOUT_S` (brak URL lub klucza = OCR wyłączony, niezależnie
 od ustawienia). Plik `.env.example` bez sekretów.
 

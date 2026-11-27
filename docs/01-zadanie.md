@@ -255,7 +255,7 @@ Przekreślone = zamknięte. Zostają pytania o fakty i o środowisko, których n
 
 7. ~~Kto ma dostawać powiadomienia: tylko specjalista, czy też brygadzista danej pracowni?~~ → konfigurowalne.
 8. ~~Każda pracownia ma swojego specjalistę — czy specjalista ma widzieć i zarządzać tylko swoją pracownią, czy wszystkimi?~~ → konfigurowalne.
-9. ~~Czy powiadomienie w aplikacji wystarczy, czy potrzebny jest też e-mail?~~ → konfigurowalne.
+9. ~~Czy powiadomienie w aplikacji wystarczy?~~ → tak; powiadomienia w aplikacji plus push.
 
 **C. Odczynniki i CRM**
 

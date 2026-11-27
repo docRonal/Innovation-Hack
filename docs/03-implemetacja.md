@@ -103,7 +103,7 @@ backend/
     reagents/      models.py  schemas.py  service.py  router.py
     results/       models.py  schemas.py  service.py  router.py
     schedule/      service.py  router.py
-    notifications/ models.py  service.py  push.py  email.py  router.py
+    notifications/ models.py  service.py  push.py  router.py
     print/         render.py  chart.py  service.py  router.py  templates/  fonts/
     reports/       models.py  schemas.py  service.py  router.py
   scripts/validation_report.py
@@ -622,20 +622,19 @@ def test_existing_key_is_skipped_without_error(db, admin_a, overdue_in_a):  # dw
 - [ ] **Uruchom:** → PASS.
 - [ ] **Commit:** `feat(files): uploads with type sniffing and access control`
 
-### T17 · Kanały push i e-mail (backend) — C · P2 · zależy od: T15
+### T17 · Kanał push (backend) — C · P2 · zależy od: T15
 
-**Pliki:** utwórz `backend/app/notifications/{push,email}.py`; rozszerz `models.py`, `router.py`, `worker.py`; test `backend/tests/notifications/test_channels.py`.
+**Pliki:** utwórz `backend/app/notifications/push.py`; rozszerz `models.py`, `router.py`, `worker.py`; test `backend/tests/notifications/test_channels.py`.
 
 **Daje:** `DeviceToken`; `POST /api/devices` (`{platform: "android" | "ios" | "web", token}`, upsert po tokenie);
 `PUSH_BODY = "Masz nowe powiadomienia w aplikacji"`; `send_push(tokens: list[str]) -> None` (firebase-admin, FCM HTTP v1);
-`send_email(to: str, subject: str) -> None` (SMTP z `SMTP_*`; temat = tytuł powiadomienia, bez szczegółów); worker po
-`generate_notifications` wysyła jedno push / jeden e-mail na odbiorcę wg kanałów reguły; token odrzucony przez FCM jako niezarejestrowany usuwa.
+worker po `generate_notifications` wysyła jedno push na odbiorcę, gdy reguła ma włączony kanał `PUSH`; token odrzucony przez FCM jako niezarejestrowany usuwa.
 
 - [ ] **Testy (czerwone):** `test_register_device_upserts_token`; `test_push_body_has_no_details` (sender podmieniony, treść == `PUSH_BODY`); `test_channels_follow_rule` (`PUSH` wyłączony → brak wywołania); `test_unregistered_token_is_deleted`.
 - [ ] **Uruchom:** `uv run pytest tests/notifications/test_channels.py -q` → FAIL.
-- [ ] **Implementacja:** kanał bez konfiguracji (brak `FCM_CREDENTIALS_FILE` / `SMTP_HOST`) jest pomijany z jednym wpisem w logu.
+- [ ] **Implementacja:** kanał bez konfiguracji (brak `FCM_CREDENTIALS_FILE`) jest pomijany z jednym wpisem w logu.
 - [ ] **Uruchom:** → PASS.
-- [ ] **Commit:** `feat(notifications): push and email channels`
+- [ ] **Commit:** `feat(notifications): push channel`
 
 ### T18 · Dane startowe i demo — F · P0 · zależy od: T10, T11 (T13, T14 dopisują swoje)
 
@@ -872,7 +871,7 @@ describe("lib", () => {
 
 - [ ] **Testy (czerwone):** `test_chart_has_point_per_result_and_threshold_lines`; `test_empty_series_chart_says_no_data`; `test_create_report_returns_pdf` (`%PDF`, `pdftotext` zawiera nazwę parametru, okres i „poza progiem: 1”); `test_manager_gets_report_ready_notification`; `test_worker_cannot_create_report` (403 `FORBIDDEN`); `test_manager_downloads_pdf` (200, `application/pdf`); `test_period_from_after_to_is_422`.
 - [ ] **Uruchom:** `uv run pytest tests/print/test_chart.py tests/reports` → FAIL.
-- [ ] **Implementacja:** szablon tylko składa dokument (02 §10 „Druki PDF”): tytuł, okres, dla każdego parametru tabela punktów, wykres (SVG z JSON osadzony jako obraz), podsumowanie weryfikacji; e-mail do kierownika przez kanał z T17, gdy włączony w regule `REPORT_READY`.
+- [ ] **Implementacja:** szablon tylko składa dokument (02 §10 „Druki PDF”): tytuł, okres, dla każdego parametru tabela punktów, wykres (SVG z JSON osadzony jako obraz), podsumowanie weryfikacji; powiadomienie w aplikacji (`REPORT_READY`) do kierowników.
 - [ ] **Uruchom:** → PASS; ręcznie: `curl -s -X POST localhost:8000/api/reports -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"period_from":"2026-09-01","period_to":"2026-11-27","parameter_ids":[]}'`.
 - [ ] **Commit:** `feat(reports): manager report PDF with charts`
 
