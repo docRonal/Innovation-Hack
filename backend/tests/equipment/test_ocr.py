@@ -123,6 +123,39 @@ def test_extract_returns_draft_and_saves_nothing(
     assert len(after) == len(before)
 
 
+def test_extract_accepts_numeric_reference_values(
+    client: TestClient,
+    db: Session,
+    admin_a: Any,
+    eq_a: Equipment,
+    auth: Any,
+    ocr_stub: OcrStub,
+) -> None:
+    update_settings(db, {"ocr_enabled": True})
+    db.flush()
+    numeric_draft = {
+        "vendor": "GUM Warszawa",
+        "certificate_no": "GUM/42/2026",
+        "calibrated_month": "2026-10",
+        "adjustments": "Brak",
+        "points": [
+            {"point": 0.0, "error": "0,0000", "uncertainty": "0,0003", "unit": "g"},
+            {"point": 200, "error": "-0,0002", "uncertainty": "0,0004", "unit": "g"},
+        ],
+        "confidence": {"points": 0.9},
+    }
+    ocr_stub.response_payload = {"choices": [{"message": {"content": json.dumps(numeric_draft)}}]}
+
+    r = client.post(
+        f"/api/equipment/{eq_a.id}/calibrations/extract",
+        headers=auth(admin_a),
+        json={"attachment_id": ocr_stub.attachment_id},
+    )
+
+    assert r.status_code == 200
+    assert [point["point"] for point in r.json()["points"]] == ["0.0", "200"]
+
+
 def test_extract_disabled_is_409_and_provider_not_called(
     client: TestClient,
     admin_a: Any,
