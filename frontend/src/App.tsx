@@ -131,7 +131,7 @@ export default function App() {
         )}
         <View snapshot={snapshot} />
       </AppShell>
-      <Toaster position="bottom-center" richColors />
+      <Toaster position="top-center" richColors />
     </TooltipProvider>
   );
 }

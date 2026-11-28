@@ -157,7 +157,7 @@ const sections = [
 type Section = (typeof sections)[number]["key"] | "notifications";
 const desktopSections = ["overview", "schedule", "equipment", "results", "reagents"] as const;
 const mobileSections = ["overview", "schedule", "equipment"] as const;
-const mobileToastOffset = { bottom: "calc(4.5rem + env(safe-area-inset-bottom, 0px))" };
+const mobileToastOffset = { top: "calc(0.75rem + env(safe-area-inset-top, 0px))" };
 
 function initials(name: string) {
   const words = name.split(/\s+/).filter(Boolean);
@@ -1018,7 +1018,7 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
           </nav>
         </>
       )}
-      <Toaster position="bottom-center" mobileOffset={mobileToastOffset} richColors />
+      <Toaster position="top-center" mobileOffset={mobileToastOffset} richColors />
     </div>
   );
 }
