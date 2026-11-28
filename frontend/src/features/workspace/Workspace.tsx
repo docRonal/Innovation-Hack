@@ -309,21 +309,40 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
         } else {
           state.cursor = Math.max(state.cursor, snap.latest_id);
           if (snap.toast !== null) {
+            const incoming = snap.toast;
             state.lastSummaryAt = Date.now();
             setNotificationRevision((value) => value + 1);
-            toast.warning(snap.toast.title, {
-              description:
-                snap.unread_count > 1 ? `Nieprzeczytane łącznie: ${snap.unread_count}` : undefined,
-              action: {
-                label: "Otwórz",
-                onClick: () => navigate("notifications"),
-              },
-            });
+            toast.custom(
+              (toastId) => (
+                <button
+                  type="button"
+                  className="workspace-tg-toast"
+                  onClick={() => {
+                    toast.dismiss(toastId);
+                    navigate("notifications");
+                  }}
+                >
+                  <span className="workspace-tg-toast-avatar" aria-hidden>
+                    <Bell className="size-4" />
+                  </span>
+                  <span className="workspace-tg-toast-body">
+                    <span className="workspace-tg-toast-meta">
+                      <strong>Warta Lab</strong>
+                      <span>
+                        {snap.unread_count > 1 ? `${snap.unread_count} nieprzecz.` : "teraz"}
+                      </span>
+                    </span>
+                    <span className="workspace-tg-toast-title">{incoming.title}</span>
+                  </span>
+                </button>
+              ),
+              { duration: 4500 },
+            );
             void notifyLocally(
-              snap.toast.count > 1
-                ? `Nowe powiadomienia (${snap.toast.count})`
+              incoming.count > 1
+                ? `Nowe powiadomienia (${incoming.count})`
                 : "Nowe powiadomienie w laboratorium",
-              snap.toast.title,
+              incoming.title,
             );
           } else if (
             snap.unread_count >= 3 &&
@@ -1018,7 +1037,7 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
           </nav>
         </>
       )}
-      <Toaster position="top-center" mobileOffset={mobileToastOffset} richColors />
+      <Toaster position="top-center" mobileOffset={mobileToastOffset} />
     </div>
   );
 }
