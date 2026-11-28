@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { parseEquipmentUrl } from "@/lib/qr";
 
 const SERVER_URL_KEY = "lab.server-url";
+export const DEFAULT_SERVER_URL = "https://spine-challenged-tough-authentication.trycloudflare.com";
 const HEALTH_PATH = "/api/health";
 const HEALTH_TIMEOUT_MS = 5000;
 
@@ -75,11 +76,11 @@ export function parseServerConfigQr(raw: string): string | null {
 }
 
 export function getServerUrl(): string | null {
-  return localStorage.getItem(SERVER_URL_KEY);
+  return DEFAULT_SERVER_URL;
 }
 
 export function getApiBaseUrl(): string {
-  return isNativeApp() ? (getServerUrl() ?? "") : "";
+  return isNativeApp() ? DEFAULT_SERVER_URL : "";
 }
 
 export function setServerUrl(url: string): void {
@@ -90,9 +91,9 @@ export function clearServerUrl(): void {
   localStorage.removeItem(SERVER_URL_KEY);
 }
 
-// Browser deployments are served by the same host as the API, so no setup is needed.
+// Native builds connect directly to DEFAULT_SERVER_URL without a debug setup screen.
 export function needsServerSetup(): boolean {
-  return isNativeApp() && getServerUrl() === null;
+  return false;
 }
 
 export async function checkServer(url: string): Promise<boolean> {

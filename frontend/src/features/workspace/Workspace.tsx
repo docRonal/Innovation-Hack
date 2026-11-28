@@ -201,29 +201,56 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
   const [pushBanner, setPushBanner] = useState<{
     seq: number;
     title: string;
-    meta: string;
+    leaving: boolean;
   } | null>(null);
   const bannerTimerRef = useRef<number | undefined>(undefined);
+  const bannerHideRef = useRef<number | undefined>(undefined);
   const pollStateRef = useRef<{ token: string; cursor: number | null; lastSummaryAt: number }>({
     token: "",
     cursor: null,
     lastSummaryAt: 0,
   });
 
-  const showPushBanner = useCallback((title: string, meta: string) => {
+  const dismissPushBanner = useCallback(() => {
     if (bannerTimerRef.current !== undefined) {
       window.clearTimeout(bannerTimerRef.current);
+      bannerTimerRef.current = undefined;
     }
-    setPushBanner((prev) => ({ seq: (prev?.seq ?? 0) + 1, title, meta }));
-    bannerTimerRef.current = window.setTimeout(() => {
+    if (bannerHideRef.current !== undefined) {
+      window.clearTimeout(bannerHideRef.current);
+      bannerHideRef.current = undefined;
+    }
+    setPushBanner((prev) => (prev ? { ...prev, leaving: true } : null));
+    bannerHideRef.current = window.setTimeout(() => {
       setPushBanner(null);
-    }, 4800);
+      bannerHideRef.current = undefined;
+    }, 240);
   }, []);
+
+  const showPushBanner = useCallback(
+    (title: string) => {
+      if (bannerTimerRef.current !== undefined) {
+        window.clearTimeout(bannerTimerRef.current);
+      }
+      if (bannerHideRef.current !== undefined) {
+        window.clearTimeout(bannerHideRef.current);
+        bannerHideRef.current = undefined;
+      }
+      setPushBanner((prev) => ({ seq: (prev?.seq ?? 0) + 1, title, leaving: false }));
+      bannerTimerRef.current = window.setTimeout(() => {
+        dismissPushBanner();
+      }, 4200);
+    },
+    [dismissPushBanner],
+  );
 
   useEffect(
     () => () => {
       if (bannerTimerRef.current !== undefined) {
         window.clearTimeout(bannerTimerRef.current);
+      }
+      if (bannerHideRef.current !== undefined) {
+        window.clearTimeout(bannerHideRef.current);
       }
     },
     [],
@@ -341,10 +368,7 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
             const incoming = snap.toast;
             state.lastSummaryAt = Date.now();
             setNotificationRevision((value) => value + 1);
-            showPushBanner(
-              incoming.title,
-              snap.unread_count > 1 ? `${snap.unread_count} nieprzecz.` : "teraz",
-            );
+            showPushBanner(incoming.title);
             void notifyLocally(
               incoming.count > 1
                 ? `Nowe powiadomienia (${incoming.count})`
@@ -391,7 +415,7 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
       switch (event.action) {
         case "push":
           setNotificationRevision((value) => value + 1);
-          showPushBanner(`${event.title} — ${event.message}`, "teraz");
+          showPushBanner(event.message || event.title);
           void notifyLocally(event.title, event.message);
           break;
         case "scan":
@@ -1048,22 +1072,19 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
         <div key={pushBanner.seq} className="workspace-tg-banner-wrap">
           <button
             type="button"
-            className="workspace-tg-toast"
+            className={cn(
+              "workspace-tg-toast",
+              pushBanner.leaving && "workspace-tg-toast--leaving",
+            )}
             onClick={() => {
-              setPushBanner(null);
+              dismissPushBanner();
               navigate("notifications");
             }}
           >
             <span className="workspace-tg-toast-avatar" aria-hidden>
               <Bell className="size-4" />
             </span>
-            <span className="workspace-tg-toast-body">
-              <span className="workspace-tg-toast-meta">
-                <strong>Warta Lab</strong>
-                <span>{pushBanner.meta}</span>
-              </span>
-              <span className="workspace-tg-toast-title">{pushBanner.title}</span>
-            </span>
+            <span className="workspace-tg-toast-title">{pushBanner.title}</span>
           </button>
         </div>
       )}

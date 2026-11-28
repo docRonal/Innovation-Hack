@@ -99,7 +99,7 @@ export default function App() {
   ) {
     return (
       <Suspense fallback={workspaceLoading}>
-        <Workspace onChangeServer={() => setReady(false)} />
+        <Workspace />
       </Suspense>
     );
   }
