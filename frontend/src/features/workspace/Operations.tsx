@@ -327,10 +327,25 @@ export function Reagents({ token, permissions }: WorkspaceProps) {
 export function Notifications({ token, after }: WorkspaceProps & { after: () => void }) {
   const [revision, setRevision] = useState(0);
   const [pushBusy, setPushBusy] = useState(false);
+  const [markAllBusy, setMarkAllBusy] = useState(false);
   const state = useApi<ApiRecord[]>("/notifications", token, revision);
   function changed() {
     setRevision((value) => value + 1);
     after();
+  }
+  async function markAll() {
+    if (markAllBusy) {
+      return;
+    }
+    setMarkAllBusy(true);
+    try {
+      await api("/notifications/read-all", token, "POST");
+      changed();
+    } catch (failure) {
+      toast.error(errorMessage(failure));
+    } finally {
+      setMarkAllBusy(false);
+    }
   }
   async function configurePush() {
     setPushBusy(true);
@@ -370,12 +385,15 @@ export function Notifications({ token, after }: WorkspaceProps & { after: () => 
             </Button>
           )}
           {state?.data?.some((row) => row.read_at == null) && (
-            <Action
-              label="Oznacz wszystkie jako przeczytane"
-              description="Zatwierdź odczyt wszystkich powiadomień na koncie."
-              save={() => api("/notifications/read-all", token, "POST")}
-              after={changed}
-            />
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={markAllBusy}
+              onClick={() => void markAll()}
+            >
+              <Check />
+              {markAllBusy ? "Zapisywanie…" : "Przeczytaj wszystkie"}
+            </Button>
           )}
         </div>
       </CardHeader>
@@ -407,9 +425,24 @@ function NotificationItem({
   token: string;
   after: () => void;
 }) {
+  const [busy, setBusy] = useState(false);
   const unread = row.read_at == null;
   const title = textValue(row.title);
   const date = typeof row.created_at === "string" ? row.created_at.slice(0, 10) : null;
+  async function markRead() {
+    if (busy) {
+      return;
+    }
+    setBusy(true);
+    try {
+      await api(`/notifications/${Number(row.id)}/read`, token, "POST");
+      after();
+    } catch (failure) {
+      toast.error(errorMessage(failure));
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <li className="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-x-3 gap-y-2 py-4 sm:grid-cols-[2rem_minmax(0,1fr)_auto] sm:items-center">
       <span
@@ -434,12 +467,10 @@ function NotificationItem({
       </div>
       {unread && (
         <div className="col-start-2 sm:col-start-3">
-          <Action
-            label="Oznacz jako przeczytane"
-            description={title}
-            save={() => api(`/notifications/${Number(row.id)}/read`, token, "POST")}
-            after={after}
-          />
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => void markRead()}>
+            <Check />
+            {busy ? "…" : "Przeczytane"}
+          </Button>
         </div>
       )}
     </li>

@@ -982,34 +982,36 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
                       ))}
                     </div>
                   )}
-                  {isNativeApp() && onChangeServer && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {isNativeApp() && onChangeServer && (
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={busy}
+                          onClick={() => {
+                            void changeServer();
+                          }}
+                        >
+                          <Server aria-hidden />
+                          Zmień serwer
+                        </Button>
+                      </SheetClose>
+                    )}
                     <SheetClose asChild>
                       <Button
                         type="button"
                         variant="outline"
                         disabled={busy}
                         onClick={() => {
-                          void changeServer();
+                          void logout();
                         }}
                       >
-                        <Server aria-hidden />
-                        Zmień serwer
+                        <LogOut aria-hidden />
+                        Wyloguj
                       </Button>
                     </SheetClose>
-                  )}
-                  <SheetClose asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={busy}
-                      onClick={() => {
-                        void logout();
-                      }}
-                    >
-                      <LogOut aria-hidden />
-                      Wyloguj
-                    </Button>
-                  </SheetClose>
+                  </div>
                 </section>
               </SheetContent>
             </Sheet>
