@@ -20,10 +20,16 @@ _MONTH_RE = re.compile(r"^[0-9]{4}-(0[1-9]|1[0-2])$")
 _FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE)
 
 _OCR_SYSTEM_PROMPT = (
-    "Extract calibration certificate fields into strict JSON with keys: "
-    "vendor (string|null), certificate_no (string|null), calibrated_month (YYYY-MM|null), "
-    "adjustments (string|null), points (array of {point, error, uncertainty, unit}), "
-    "confidence (object mapping field names to 0..1). Return JSON only."
+    "Extract calibration certificate fields into strict JSON. Return JSON only, no markdown. "
+    "Keys: vendor (string|null), certificate_no (string|null), calibrated_month (YYYY-MM|null), "
+    "adjustments (string|null), points (array of objects), confidence (object mapping field "
+    "names to 0..1). "
+    "For points, return one object per row of the results table with exactly these keys: "
+    "point = the text in the 'Wartość odniesienia' column (the reference value, not the "
+    "instrument indication); error = 'Błąd pomiaru'; uncertainty = 'Niepewność rozszerzona U'; "
+    "unit = 'Jednostka'. Always return point, error, uncertainty and unit as strings, keep the "
+    "decimal comma or dot exactly as printed, include every row, and never invent values. "
+    "Use null only when a cell is genuinely unreadable."
 )
 
 
@@ -65,6 +71,13 @@ def _opt_str(val: Any) -> str | None:
     return None
 
 
+def _opt_text(val: Any) -> str | None:
+    """Text cell that OCR models sometimes return as a JSON number (for example 0.0)."""
+    if isinstance(val, int | float) and not isinstance(val, bool):
+        return str(val)
+    return _opt_str(val)
+
+
 def _parse_draft_payload(raw_content: str, *, cfg: OcrConfig) -> CalibrationDraft:
     cleaned = _FENCE_RE.sub("", raw_content.strip()).strip()
     try:
@@ -98,8 +111,8 @@ def _parse_draft_payload(raw_content: str, *, cfg: OcrConfig) -> CalibrationDraf
             if not isinstance(item, dict):
                 continue
             pt_warnings: list[str] = []
-            pt_label = _opt_str(item.get("point"))
-            pt_unit = _opt_str(item.get("unit"))
+            pt_label = _opt_text(item.get("point"))
+            pt_unit = _opt_text(item.get("unit"))
 
             err_out: str | None = None
             raw_err = item.get("error")

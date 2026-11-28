@@ -155,6 +155,36 @@ python3 degrade.py
 6. W historii zmian pojawi się wpis `ocr_extract` z dostawcą, modelem i pewnością pól;
    oryginał skanu zostaje w załącznikach.
 
+## Kod QR do pokazu
+
+Gotowy kod dla urządzenia `122/A` (Termohigrometr, `public_id = CWA000122A`):
+
+```text
+docs/demo-documents/qr/122-A.png
+```
+
+Kod zawiera link:
+
+```text
+https://kits-surplus-funky-bridal.trycloudflare.com/e/CWA000122A
+```
+
+Skanuj go wewnętrznym skanerem aplikacji (`Skanuj QR`), a nie aparatem telefonu:
+aparat otworzy wersję webową w przeglądarce, bo App Links / Universal Links nie są
+skonfigurowane. Po zeskanowaniu aplikacja otwiera kartę `122/A` na podstawie
+`public_id`, niezależnie od hosta w linku.
+
+Regeneracja (host musi wskazywać działający serwer demo):
+
+```bash
+qrencode -o docs/demo-documents/qr/122-A.png -s 12 -m 4 -l H \
+  'https://kits-surplus-funky-bridal.trycloudflare.com/e/CWA000122A'
+```
+
+Tunel `trycloudflare.com` jest tymczasowy: po jego restarcie wygeneruj kod ponownie z nowym
+hostem. Kod jest przeznaczony do skanowania w przeglądarce telefonu; aplikacja natywna ma
+osobny, zapisany na stałe adres serwera.
+
 ## Włączenie OCR
 
 Funkcja jest domyślnie wyłączona. Wymagane są oba elementy:
