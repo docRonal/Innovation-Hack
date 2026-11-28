@@ -16,7 +16,7 @@ const ICONS: ToasterProps["icons"] = {
   loading: <Loader2Icon className="size-4 animate-spin" />,
 };
 
-// Sonner paints its own surface; map it onto the app brand tokens for a compact Telegram-like banner.
+// Sonner paints its own surface; map it onto the app brand tokens for a compact banner.
 const STYLE: CSSProperties & Record<`--${string}`, string> = {
   "--normal-bg": "var(--brand-navy-deep)",
   "--normal-text": "#ffffff",
@@ -27,9 +27,9 @@ const STYLE: CSSProperties & Record<`--${string}`, string> = {
 const TOAST_OPTIONS: ToasterProps["toastOptions"] = {
   classNames: {
     toast:
-      "cn-toast !px-3 !py-2.5 !text-[13px] !shadow-lg !rounded-[14px] !gap-2.5 !min-h-0 !max-w-[360px]",
-    title: "!font-semibold !text-[13px] !leading-tight",
-    description: "!text-[11px] !text-white/75 !leading-tight",
+      "cn-toast !mx-auto !px-3.5 !py-2.5 !text-[13px] !shadow-lg !rounded-[14px] !gap-2.5 !min-h-0",
+    title: "!font-semibold !text-[13px] !leading-snug",
+    description: "!text-[11.5px] !text-white/75 !leading-snug",
     actionButton:
       "!bg-brand-lime !text-brand-navy-deep !font-bold !text-[11px] !px-2.5 !py-1 !rounded-full",
   },

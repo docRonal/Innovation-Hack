@@ -157,7 +157,11 @@ const sections = [
 type Section = (typeof sections)[number]["key"] | "notifications";
 const desktopSections = ["overview", "schedule", "equipment", "results", "reagents"] as const;
 const mobileSections = ["overview", "schedule", "equipment"] as const;
-const mobileToastOffset = { top: "calc(0.75rem + env(safe-area-inset-top, 0px))" };
+const mobileToastOffset = {
+  top: "calc(10px + env(safe-area-inset-top, 0px))",
+  left: "12px",
+  right: "12px",
+};
 
 function initials(name: string) {
   const words = name.split(/\s+/).filter(Boolean);
@@ -194,11 +198,36 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
   );
   const [notificationRevision, setNotificationRevision] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pushBanner, setPushBanner] = useState<{
+    seq: number;
+    title: string;
+    meta: string;
+  } | null>(null);
+  const bannerTimerRef = useRef<number | undefined>(undefined);
   const pollStateRef = useRef<{ token: string; cursor: number | null; lastSummaryAt: number }>({
     token: "",
     cursor: null,
     lastSummaryAt: 0,
   });
+
+  const showPushBanner = useCallback((title: string, meta: string) => {
+    if (bannerTimerRef.current !== undefined) {
+      window.clearTimeout(bannerTimerRef.current);
+    }
+    setPushBanner((prev) => ({ seq: (prev?.seq ?? 0) + 1, title, meta }));
+    bannerTimerRef.current = window.setTimeout(() => {
+      setPushBanner(null);
+    }, 4800);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (bannerTimerRef.current !== undefined) {
+        window.clearTimeout(bannerTimerRef.current);
+      }
+    },
+    [],
+  );
 
   async function changeServer() {
     scanController.current?.abort();
@@ -312,31 +341,9 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
             const incoming = snap.toast;
             state.lastSummaryAt = Date.now();
             setNotificationRevision((value) => value + 1);
-            toast.custom(
-              (toastId) => (
-                <button
-                  type="button"
-                  className="workspace-tg-toast"
-                  onClick={() => {
-                    toast.dismiss(toastId);
-                    navigate("notifications");
-                  }}
-                >
-                  <span className="workspace-tg-toast-avatar" aria-hidden>
-                    <Bell className="size-4" />
-                  </span>
-                  <span className="workspace-tg-toast-body">
-                    <span className="workspace-tg-toast-meta">
-                      <strong>Warta Lab</strong>
-                      <span>
-                        {snap.unread_count > 1 ? `${snap.unread_count} nieprzecz.` : "teraz"}
-                      </span>
-                    </span>
-                    <span className="workspace-tg-toast-title">{incoming.title}</span>
-                  </span>
-                </button>
-              ),
-              { duration: 4500 },
+            showPushBanner(
+              incoming.title,
+              snap.unread_count > 1 ? `${snap.unread_count} nieprzecz.` : "teraz",
             );
             void notifyLocally(
               incoming.count > 1
@@ -367,7 +374,7 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
         window.clearTimeout(timer);
       }
     };
-  }, [navigate, session]);
+  }, [navigate, notificationRevision, session, showPushBanner]);
 
   // Presentation console: the API queues ephemeral signals that drive the app on stage.
   useEffect(() => {
@@ -384,7 +391,7 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
       switch (event.action) {
         case "push":
           setNotificationRevision((value) => value + 1);
-          toast.success(event.title, { description: event.message });
+          showPushBanner(`${event.title} — ${event.message}`, "teraz");
           void notifyLocally(event.title, event.message);
           break;
         case "scan":
@@ -437,7 +444,7 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
         window.clearTimeout(timer);
       }
     };
-  }, [openPublic, session]);
+  }, [openPublic, session, showPushBanner]);
 
   async function login(loginName: string, password: string) {
     if (busy) {
@@ -1036,6 +1043,29 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
             </Sheet>
           </nav>
         </>
+      )}
+      {pushBanner && (
+        <div key={pushBanner.seq} className="workspace-tg-banner-wrap">
+          <button
+            type="button"
+            className="workspace-tg-toast"
+            onClick={() => {
+              setPushBanner(null);
+              navigate("notifications");
+            }}
+          >
+            <span className="workspace-tg-toast-avatar" aria-hidden>
+              <Bell className="size-4" />
+            </span>
+            <span className="workspace-tg-toast-body">
+              <span className="workspace-tg-toast-meta">
+                <strong>Warta Lab</strong>
+                <span>{pushBanner.meta}</span>
+              </span>
+              <span className="workspace-tg-toast-title">{pushBanner.title}</span>
+            </span>
+          </button>
+        </div>
       )}
       <Toaster position="top-center" mobileOffset={mobileToastOffset} />
     </div>
