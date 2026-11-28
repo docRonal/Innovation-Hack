@@ -2,7 +2,7 @@
 """Make the clean certificates look photographed: light perspective, shadow, noise, JPEG.
 
 Reads pdf/*.pdf, writes degraded/jpg/*.jpg (one per page) and degraded/pdf/*.pdf
-(a two-page raster PDF, so the OCR endpoint still sees both pages).
+(a raster PDF of the same pages).
 
 Requires Pillow (PIL) and poppler's pdftoppm; no project dependency is added.
 """

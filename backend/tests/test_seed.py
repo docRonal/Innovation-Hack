@@ -29,9 +29,9 @@ def test_seed_is_idempotent(db: Session) -> None:
     assert db.scalar(select(func.count(Lab.id))) == 3
     assert db.scalar(select(func.count(User.id))) == 3
     assert db.scalar(select(func.count(Equipment.id))) == 15
-    assert db.scalar(select(func.count(FormTemplate.id))) == 2
-    assert db.scalar(select(func.count(CheckPlan.id))) == 3
-    assert db.scalar(select(func.count(CheckRecord.id))) == 2
+    assert db.scalar(select(func.count(FormTemplate.id))) == 5
+    assert db.scalar(select(func.count(CheckPlan.id))) == 6
+    assert db.scalar(select(func.count(CheckRecord.id))) == 18
     assert audit_count_first is not None and audit_count_first > 0
     assert audit_count_second == audit_count_first
 

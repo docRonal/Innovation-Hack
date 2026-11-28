@@ -99,6 +99,6 @@ describe("demo feature 3: usable CRM stock", () => {
     expect(stock.stock).toBe("600");
     expect(stock.usableStock).toBe("200");
     expect(stock.low).toBe(true);
-    expect(stock.recommendedLot?.lotNo).toBe("CRM-2401-B");
+    expect(stock.recommendedLot?.lotNo).toBe("SRM-1889b/26B");
   });
 });

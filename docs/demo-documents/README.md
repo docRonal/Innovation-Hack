@@ -14,17 +14,16 @@ pokaz był spójny z rejestrem.
 | `pdf/piec-125-A.pdf` | Piec muflowy Nabertherm L 9/11, `125/A` | `SW/2026/10/A125` | 14.10.2026 | `°C` | 500 / 800 / 950 °C |
 | `pdf/blaine-204-W.pdf` | Aparat Blaine'a Toni Technik ToniPERM, `204/W` | `SW/2026/11/W204` | 06.11.2026 | `cm²/g` | 2000 / 3500 / 5000 cm²/g |
 
-Każdy dokument ma dwie strony: dane identyfikacyjne i metrologiczne na stronie 1,
-tabelę wyników na stronie 2. Taki układ jest typowy dla polskich świadectw wzorcowania
-(PCA DAP-04 / wzór GUM W-01) i pozwala sprawdzić, czy model radzi sobie z wielostronicowym
-skanem.
+Każdy dokument mieści się na jednej stronie: dane identyfikacyjne i metrologiczne oraz
+tabela wyników. Taki układ jest typowy dla skróconych świadectw wzorcowania i pozwala
+wgrać skan jako jeden plik.
 
 ## Jak wygląda świadectwo wzorcowania
 
 Wzorcowy dokument akredytowanego laboratorium (wzór PCA, np. DAP-04; wzór GUM W-01)
 zawiera zwykle:
 
-**Strona 1**
+**Część identyfikacyjna**
 
 - nagłówek: nazwa, adres i dane kontaktowe laboratorium, numer akredytacji PCA (`AP xxx`),
   informacja o sygnatariuszach EA MLA i ILAC MRA,
@@ -43,14 +42,12 @@ zawiera zwykle:
   z zadaniem decyzję OK / NOK podejmuje laboratorium użytkownika, a nie firma wzorcująca,
 - podpisy osoby wykonującej i autoryzującej.
 
-**Strona 2**
+**Wyniki wzorcowania**
 
-- powtórzony nagłówek z numerem świadectwa i numerem strony,
 - `WYNIKI WZORCOWANIA` w tabeli: wartość odniesienia, wskazanie wzorcowanego przyrządu,
   błąd pomiaru, niepewność rozszerzona `U`, jednostka,
 - objaśnienie znaków i niepewności,
-- uwagi (metoda obciążenia, głębokość zanurzenia, liczba powtórzeń itp.),
-- podpisy i `KONIEC WYNIKÓW WZORCOWANIA`.
+- uwagi (metoda obciążenia, głębokość zanurzenia, liczba powtórzeń itp.).
 
 W praktyce układy różnią się między laboratoriami; powyższe elementy są jednak powtarzalne
 i to one są potrzebne do ekstrakcji.
@@ -133,23 +130,20 @@ rozmycie, ciepły odcień papieru i kompresja JPEG. Tekst pozostaje czytelny dla
 python3 degrade.py
 ```
 
-| Czysty dokument | Zdegradowany PDF (2 strony) | Zdegradowane strony (JPG) |
+| Czysty dokument | Zdegradowany PDF (1 strona) | Zdegradowany obraz (JPG) |
 |---|---|---|
-| `pdf/waga-121-A.pdf` | `degraded/pdf/waga-121-A.pdf` | `degraded/jpg/waga-121-A-1.jpg`, `-2.jpg` |
-| `pdf/piec-125-A.pdf` | `degraded/pdf/piec-125-A.pdf` | `degraded/jpg/piec-125-A-1.jpg`, `-2.jpg` |
-| `pdf/blaine-204-W.pdf` | `degraded/pdf/blaine-204-W.pdf` | `degraded/jpg/blaine-204-W-1.jpg`, `-2.jpg` |
+| `pdf/waga-121-A.pdf` | `degraded/pdf/waga-121-A.pdf` | `degraded/jpg/waga-121-A-1.jpg` |
+| `pdf/piec-125-A.pdf` | `degraded/pdf/piec-125-A.pdf` | `degraded/jpg/piec-125-A-1.jpg` |
+| `pdf/blaine-204-W.pdf` | `degraded/pdf/blaine-204-W.pdf` | `degraded/jpg/blaine-204-W-1.jpg` |
 
-- Do formularza (przycisk wyboru pliku) wgraj **PDF** — zawiera obie strony, więc model
-  widzi dane identyfikacyjne i tabelę wyników.
-- Do pokazu „zdjęcia telefonem” lub wydruku użyj JPG. Strona 2 ma powtórzoną nazwę
-  laboratorium, numer świadectwa, datę wykonania i adiustacje, więc jedno zdjęcie strony 2
-  wystarcza do ekstrakcji wszystkich pól. PDF daje modelowi obie strony.
+- Do formularza (przycisk wyboru pliku) wgraj **PDF** albo **JPG** — jedno i drugie zawiera
+  wszystkie dane identyfikacyjne oraz tabelę wyników.
 - Stopień degradacji regulują `--width`, `--dpi`, `--quality` (domyślnie 1600 px, 200 dpi,
   JPEG 78). Skrypt wymaga Pillow i `pdftoppm`; nie dodaje zależności do projektu.
 
 ## Przebieg pokazu
 
-1. Użyj `degraded/pdf/*.pdf` (albo wydrukuj `degraded/jpg/*-1.jpg` i `*-2.jpg`).
+1. Użyj `degraded/pdf/*.pdf` (albo `degraded/jpg/*-1.jpg`).
 2. Zaloguj się kontem z uprawnieniem `calibration:write` (np. `admin`; hasło ustawia
    `SEED_ADMIN_PASSWORD`).
 3. Otwórz kartę urządzenia (np. `121/A`), wybierz `Wpisz wzorcowanie`, dodaj skan/zdjęcie

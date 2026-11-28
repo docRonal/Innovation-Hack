@@ -8,101 +8,76 @@
 #let tint = rgb("#eef3f9")
 
 #set document(title: "Świadectwo wzorcowania " + data.cert_no, author: data.lab.name)
-#set text(lang: "pl", font: "DejaVu Sans", size: 8.2pt, fill: ink)
+#set text(lang: "pl", font: "DejaVu Sans", size: 7.6pt, fill: ink)
 #set page(
   paper: "a4",
-  margin: (x: 1.55cm, top: 1.2cm, bottom: 1.5cm),
+  margin: (x: 1.5cm, top: 1.1cm, bottom: 1.3cm),
   footer: context [
-    #set text(size: 6.6pt, fill: muted)
+    #set text(size: 6.2pt, fill: muted)
     #data.lab.name · AP #data.lab.ap
     #h(1fr)
     Świadectwo nr #data.cert_no · Strona #counter(page).display("1 z 1", both: true)
   ],
 )
-#set par(justify: true, leading: 0.5em)
+#set par(justify: true, leading: 0.45em)
 
-#let label(value) = text(size: 6.5pt, weight: "bold", fill: muted, tracking: 0.05em)[#upper(value)]
+#let label(value) = text(size: 6.2pt, weight: "bold", fill: muted, tracking: 0.05em)[#upper(value)]
 #let kv(key, value) = grid(
-  columns: (3.2cm, 1fr),
-  gutter: 3pt,
+  columns: (2.9cm, 1fr),
+  gutter: 2pt,
   label(key),
   value,
 )
 #let section(title, body) = block(
   width: 100%,
-  above: 7pt,
-  below: 3pt,
-  stroke: (top: 0.9pt + navy),
-  inset: (top: 2.5pt, bottom: 1.5pt),
+  above: 5pt,
+  below: 2pt,
+  stroke: (top: 0.8pt + navy),
+  inset: (top: 2pt, bottom: 1pt),
 )[
-  #text(size: 7.2pt, weight: "bold", fill: navy, tracking: 0.08em)[#upper(title)]
-  #v(1.2pt)
+  #text(size: 6.8pt, weight: "bold", fill: navy, tracking: 0.08em)[#upper(title)]
+  #v(1pt)
   #body
 ]
 
 #let page_header() = [
   #grid(
-    columns: (1fr, 2.5cm),
+    columns: (1fr, 2.3cm),
     gutter: 10pt,
     align: (left + horizon, right + horizon),
     [
-      #text(size: 14pt, weight: "bold", fill: navy)[#data.lab.name]
+      #text(size: 13pt, weight: "bold", fill: navy)[#data.lab.name]
       #linebreak()
-      #text(size: 7pt, fill: muted)[#data.lab.address]
+      #text(size: 6.6pt, fill: muted)[#data.lab.address]
       #linebreak()
-      #text(size: 7pt, fill: muted)[#data.lab.contact]
+      #text(size: 6.6pt, fill: muted)[#data.lab.contact]
     ],
     [
-      #block(fill: navy, inset: (x: 6pt, y: 4pt), radius: 2pt, width: 100%)[
+      #block(fill: navy, inset: (x: 5pt, y: 3pt), radius: 2pt, width: 100%)[
         #align(center)[
-          #text(fill: white, weight: "bold", size: 12pt)[PCA]
+          #text(fill: white, weight: "bold", size: 11pt)[PCA]
           #linebreak()
-          #text(fill: white, size: 8pt)[AP #data.lab.ap]
+          #text(fill: white, size: 7.4pt)[AP #data.lab.ap]
         ]
       ]
     ],
   )
-  #v(3pt)
-  #line(length: 100%, stroke: 1.2pt + navy)
-  #v(1pt)
-  #text(size: 6.4pt, fill: muted)[#data.lab.accreditation]
-]
-
-#let small_header() = [
-  #grid(
-    columns: (1fr, auto),
-    gutter: 10pt,
-    align: (left + horizon, right + horizon),
-    [
-      #text(size: 10pt, weight: "bold", fill: navy)[#data.lab.name]
-      #linebreak()
-      #text(size: 6.4pt, fill: muted)[
-        Laboratorium wzorcujące akredytowane przez PCA · Nr akredytacji AP #data.lab.ap
-      ]
-    ],
-    [
-      #text(size: 6.4pt, fill: muted)[Nr świadectwa]
-      #linebreak()
-      #text(size: 8pt, weight: "bold")[#data.cert_no]
-    ],
-  )
-  #v(1.5pt)
-  #text(size: 6.8pt, fill: muted)[Data wykonania wzorcowania: #data.calibration_date]
   #v(2pt)
-  #line(length: 100%, stroke: 0.8pt + navy)
+  #line(length: 100%, stroke: 1.1pt + navy)
+  #v(1pt)
+  #text(size: 6pt, fill: muted)[#data.lab.accreditation]
 ]
 
-// ---------------------------------------------------------------- page 1
 #page_header()
-#v(7pt)
-#align(center)[
-  #text(size: 16pt, weight: "bold", fill: navy)[ŚWIADECTWO WZORCOWANIA]
-  #linebreak()
-  #text(size: 7.2pt, fill: muted)[CALIBRATION CERTIFICATE]
-]
 #v(4pt)
+#align(center)[
+  #text(size: 14pt, weight: "bold", fill: navy)[ŚWIADECTWO WZORCOWANIA]
+  #linebreak()
+  #text(size: 6.6pt, fill: muted)[CALIBRATION CERTIFICATE]
+]
+#v(2pt)
 #grid(
-  columns: (1fr, 1fr, auto),
+  columns: (1fr, 1fr, 1fr),
   gutter: 8pt,
   [
     #label("Data wydania") #linebreak()
@@ -113,8 +88,8 @@
     #text(weight: "bold")[#data.cert_no]
   ],
   [
-    #label("Strona") #linebreak()
-    1/2
+    #label("Data wykonania") #linebreak()
+    #data.calibration_date
   ],
 )
 
@@ -125,7 +100,7 @@
   #kv("Identyfikator", data.object.inventory)
   #kv("Lokalizacja", data.object.location)
 ])
-#v(2pt)
+#v(1pt)
 
 #grid(
   columns: (1fr, 1fr),
@@ -144,49 +119,43 @@
   ],
 )
 
-#section("Miejsce wzorcowania", [#data.place])
-#section("Metoda wzorcowania", [#data.method])
-#section("Warunki środowiskowe", [#data.conditions])
-#section("Data wykonania wzorcowania", [#data.calibration_date])
-#section("Spójność pomiarowa", [#data.traceability])
-#section("Niepewność pomiaru", [#data.uncertainty])
-#section("Adiustacje", [#data.adjustments])
-#section("Zgodność z wymaganiami", [#data.compliance])
-
-#v(6pt)
 #grid(
   columns: (1fr, 1fr),
-  gutter: 20pt,
+  gutter: 14pt,
   [
-    #label("Wykonał(a)") #linebreak()
-    #v(12pt)
-    #line(length: 100%, stroke: 0.5pt + muted)
-    #linebreak()
-    #data.performed_by
+    #section("Miejsce wzorcowania", [#data.place])
+    #section("Metoda wzorcowania", [#data.method])
+    #section("Warunki środowiskowe", [#data.conditions])
   ],
   [
-    #label("Autoryzował(a)") #linebreak()
-    #v(12pt)
-    #line(length: 100%, stroke: 0.5pt + muted)
-    #linebreak()
-    #data.authorized_by
+    #section("Spójność pomiarowa", [#data.traceability])
+    #section("Niepewność pomiaru", [#data.uncertainty])
+    #section("Adiustacje", [#data.adjustments])
   ],
 )
 
-// ---------------------------------------------------------------- page 2
-#pagebreak()
-#small_header()
-#v(6pt)
+#grid(
+  columns: (1fr, 1fr),
+  gutter: 14pt,
+  [
+    #section("Zgodność z wymaganiami", [#data.compliance])
+  ],
+  [
+    #section("Uwagi", [#data.notes])
+  ],
+)
+
+#v(4pt)
 #align(center)[
-  #text(size: 12.5pt, weight: "bold", fill: navy, tracking: 0.08em)[WYNIKI WZORCOWANIA]
+  #text(size: 11.5pt, weight: "bold", fill: navy, tracking: 0.08em)[WYNIKI WZORCOWANIA]
 ]
-#v(3pt)
-#text(size: 7.8pt)[
+#v(2pt)
+#text(size: 7.2pt)[
   Wyniki przeprowadzonego wzorcowania przedstawiono poniżej. Podane wartości niepewności
   stanowią niepewność rozszerzoną U przy poziomie ufności ok. 95 % i współczynniku
   rozszerzenia k = 2.
 ]
-#v(4pt)
+#v(3pt)
 #[
   #set par(justify: false)
   #table(
@@ -214,37 +183,31 @@
   )
 ]
 
-#v(5pt)
-#block(fill: tint, inset: 6pt, radius: 2pt, width: 100%)[
-  #set text(size: 7.2pt)
+#v(4pt)
+#block(fill: tint, inset: 5pt, radius: 2pt, width: 100%)[
+  #set text(size: 6.8pt)
   *Błąd pomiaru* = wskazanie wzorcowanego przyrządu − wartość odniesienia.
   *Niepewność rozszerzona U* = k · u#sub[c], gdzie u#sub[c] jest niepewnością standardową
   złożoną, a k = 2 odpowiada prawdopodobieństwu rozszerzenia ok. 95 %.
 ]
-#v(4pt)
-#text(size: 7.4pt)[*Adiustacje:* #data.adjustments]
-#v(2pt)
-#text(size: 7.4pt)[#data.notes]
-#v(12pt)
+#v(6pt)
 #grid(
   columns: (1fr, 1fr),
   gutter: 20pt,
   [
     #label("Wykonał(a)") #linebreak()
-    #v(14pt)
+    #v(11pt)
     #line(length: 100%, stroke: 0.5pt + muted)
     #linebreak()
     #data.performed_by
   ],
   [
     #label("Autoryzował(a)") #linebreak()
-    #v(14pt)
+    #v(11pt)
     #line(length: 100%, stroke: 0.5pt + muted)
     #linebreak()
     #data.authorized_by
   ],
 )
-#v(5pt)
-#align(center)[#text(size: 7pt, fill: muted)[KONIEC WYNIKÓW WZORCOWANIA]]
 #v(3pt)
-#align(center)[#text(size: 5.8pt, fill: muted)[#data.demo_note]]
+#align(center)[#text(size: 5.6pt, fill: muted)[#data.demo_note]]

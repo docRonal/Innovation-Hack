@@ -49,6 +49,15 @@ export function scheduleDevice<T extends { id: number; code: string }>(
   return undefined;
 }
 
+/** Polish noun form for a count: 1 urządzenie, 2–4 urządzenia, 5+ (and 12–14) urządzeń. */
+export function plural(count: number, one: string, few: string, many: string): string {
+  if (count === 1) {
+    return one;
+  }
+  const tens = count % 100;
+  return count % 10 >= 2 && count % 10 <= 4 && (tens < 12 || tens > 14) ? few : many;
+}
+
 const attentionStatuses = new Set(["OVERDUE", "NO_DATA", "LOW", "COUNT_DUE"]);
 const upcomingStatuses = new Set(["DUE_SOON", "OK"]);
 
