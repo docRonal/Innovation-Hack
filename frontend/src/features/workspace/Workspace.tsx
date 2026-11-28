@@ -398,7 +398,7 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
         window.clearTimeout(timer);
       }
     };
-  }, [navigate, notificationRevision, session, showPushBanner]);
+  }, [session, showPushBanner]);
 
   // Presentation console: the API queues ephemeral signals that drive the app on stage.
   useEffect(() => {
