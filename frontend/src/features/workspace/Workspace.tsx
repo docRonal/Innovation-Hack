@@ -157,7 +157,11 @@ const sections = [
 type Section = (typeof sections)[number]["key"] | "notifications";
 const desktopSections = ["overview", "schedule", "equipment", "results", "reagents"] as const;
 const mobileSections = ["overview", "schedule", "equipment"] as const;
-const mobileToastOffset = { bottom: "calc(4.5rem + env(safe-area-inset-bottom, 0px))" };
+const mobileToastOffset = {
+  top: "calc(10px + env(safe-area-inset-top, 0px))",
+  left: "12px",
+  right: "12px",
+};
 
 function initials(name: string) {
   const words = name.split(/\s+/).filter(Boolean);
@@ -194,11 +198,63 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
   );
   const [notificationRevision, setNotificationRevision] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pushBanner, setPushBanner] = useState<{
+    seq: number;
+    title: string;
+    leaving: boolean;
+  } | null>(null);
+  const bannerTimerRef = useRef<number | undefined>(undefined);
+  const bannerHideRef = useRef<number | undefined>(undefined);
   const pollStateRef = useRef<{ token: string; cursor: number | null; lastSummaryAt: number }>({
     token: "",
     cursor: null,
     lastSummaryAt: 0,
   });
+
+  const dismissPushBanner = useCallback(() => {
+    if (bannerTimerRef.current !== undefined) {
+      window.clearTimeout(bannerTimerRef.current);
+      bannerTimerRef.current = undefined;
+    }
+    if (bannerHideRef.current !== undefined) {
+      window.clearTimeout(bannerHideRef.current);
+      bannerHideRef.current = undefined;
+    }
+    setPushBanner((prev) => (prev ? { ...prev, leaving: true } : null));
+    bannerHideRef.current = window.setTimeout(() => {
+      setPushBanner(null);
+      bannerHideRef.current = undefined;
+    }, 240);
+  }, []);
+
+  const showPushBanner = useCallback(
+    (title: string) => {
+      if (bannerTimerRef.current !== undefined) {
+        window.clearTimeout(bannerTimerRef.current);
+      }
+      if (bannerHideRef.current !== undefined) {
+        window.clearTimeout(bannerHideRef.current);
+        bannerHideRef.current = undefined;
+      }
+      setPushBanner((prev) => ({ seq: (prev?.seq ?? 0) + 1, title, leaving: false }));
+      bannerTimerRef.current = window.setTimeout(() => {
+        dismissPushBanner();
+      }, 4200);
+    },
+    [dismissPushBanner],
+  );
+
+  useEffect(
+    () => () => {
+      if (bannerTimerRef.current !== undefined) {
+        window.clearTimeout(bannerTimerRef.current);
+      }
+      if (bannerHideRef.current !== undefined) {
+        window.clearTimeout(bannerHideRef.current);
+      }
+    },
+    [],
+  );
 
   async function changeServer() {
     scanController.current?.abort();
@@ -309,21 +365,15 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
         } else {
           state.cursor = Math.max(state.cursor, snap.latest_id);
           if (snap.toast !== null) {
+            const incoming = snap.toast;
             state.lastSummaryAt = Date.now();
             setNotificationRevision((value) => value + 1);
-            toast.warning(snap.toast.title, {
-              description:
-                snap.unread_count > 1 ? `Nieprzeczytane łącznie: ${snap.unread_count}` : undefined,
-              action: {
-                label: "Otwórz",
-                onClick: () => navigate("notifications"),
-              },
-            });
+            showPushBanner(incoming.title);
             void notifyLocally(
-              snap.toast.count > 1
-                ? `Nowe powiadomienia (${snap.toast.count})`
+              incoming.count > 1
+                ? `Nowe powiadomienia (${incoming.count})`
                 : "Nowe powiadomienie w laboratorium",
-              snap.toast.title,
+              incoming.title,
             );
           } else if (
             snap.unread_count >= 3 &&
@@ -348,7 +398,7 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
         window.clearTimeout(timer);
       }
     };
-  }, [navigate, session]);
+  }, [session, showPushBanner]);
 
   // Presentation console: the API queues ephemeral signals that drive the app on stage.
   useEffect(() => {
@@ -365,7 +415,7 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
       switch (event.action) {
         case "push":
           setNotificationRevision((value) => value + 1);
-          toast.success(event.title, { description: event.message });
+          showPushBanner(event.message || event.title);
           void notifyLocally(event.title, event.message);
           break;
         case "scan":
@@ -418,7 +468,7 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
         window.clearTimeout(timer);
       }
     };
-  }, [openPublic, session]);
+  }, [openPublic, session, showPushBanner]);
 
   async function login(loginName: string, password: string) {
     if (busy) {
@@ -982,41 +1032,63 @@ export function Workspace({ onChangeServer }: { onChangeServer?: () => void } = 
                       ))}
                     </div>
                   )}
-                  {isNativeApp() && onChangeServer && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {isNativeApp() && onChangeServer && (
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={busy}
+                          onClick={() => {
+                            void changeServer();
+                          }}
+                        >
+                          <Server aria-hidden />
+                          Zmień serwer
+                        </Button>
+                      </SheetClose>
+                    )}
                     <SheetClose asChild>
                       <Button
                         type="button"
                         variant="outline"
                         disabled={busy}
                         onClick={() => {
-                          void changeServer();
+                          void logout();
                         }}
                       >
-                        <Server aria-hidden />
-                        Zmień serwer
+                        <LogOut aria-hidden />
+                        Wyloguj
                       </Button>
                     </SheetClose>
-                  )}
-                  <SheetClose asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={busy}
-                      onClick={() => {
-                        void logout();
-                      }}
-                    >
-                      <LogOut aria-hidden />
-                      Wyloguj
-                    </Button>
-                  </SheetClose>
+                  </div>
                 </section>
               </SheetContent>
             </Sheet>
           </nav>
         </>
       )}
-      <Toaster position="bottom-center" mobileOffset={mobileToastOffset} richColors />
+      {pushBanner && (
+        <div key={pushBanner.seq} className="workspace-tg-banner-wrap">
+          <button
+            type="button"
+            className={cn(
+              "workspace-tg-toast",
+              pushBanner.leaving && "workspace-tg-toast--leaving",
+            )}
+            onClick={() => {
+              dismissPushBanner();
+              navigate("notifications");
+            }}
+          >
+            <span className="workspace-tg-toast-avatar" aria-hidden>
+              <Bell className="size-4" />
+            </span>
+            <span className="workspace-tg-toast-title">{pushBanner.title}</span>
+          </button>
+        </div>
+      )}
+      <Toaster position="top-center" mobileOffset={mobileToastOffset} />
     </div>
   );
 }

@@ -99,7 +99,7 @@ export default function App() {
   ) {
     return (
       <Suspense fallback={workspaceLoading}>
-        <Workspace onChangeServer={() => setReady(false)} />
+        <Workspace />
       </Suspense>
     );
   }
@@ -131,7 +131,7 @@ export default function App() {
         )}
         <View snapshot={snapshot} />
       </AppShell>
-      <Toaster position="bottom-center" richColors />
+      <Toaster position="top-center" richColors />
     </TooltipProvider>
   );
 }

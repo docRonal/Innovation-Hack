@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Download,
+  Ellipsis,
   ExternalLink,
   FileCheck2,
   MapPin,
@@ -24,6 +25,13 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatMonth } from "@/lib/months";
@@ -530,6 +538,7 @@ function EquipmentDetails({
   const [history, setHistory] = useState<number>();
   const [openedPlan, setOpenedPlan] = useState<number>();
   const [nfcWriting, setNfcWriting] = useState(false);
+  const [activeDialog, setActiveDialog] = useState<"edit" | "withdraw" | "auth" | null>(null);
 
   async function writeNfc() {
     if (nfcWriting) {
@@ -652,34 +661,62 @@ function EquipmentDetails({
               token={token}
               path={`${path}/history.pdf`}
               filename={`karta-${device.id}.pdf`}
-              label="Karta i historia PDF"
+              label="Karta PDF"
             />
-            <Button variant="outline" size="sm" asChild>
-              <a href={device.qr_url} target="_blank" rel="noreferrer">
-                <ExternalLink />
-                Link QR / NFC
-              </a>
-            </Button>
-            {write && isNfcAvailable() && (
-              <Button variant="outline" size="sm" disabled={nfcWriting} onClick={writeNfc}>
-                <ScanLine />
-                {nfcWriting ? "Zbliż tag NFC…" : "Zapisz tag NFC"}
-              </Button>
-            )}
-            {write && (
+            {write ? (
               <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={nfcWriting}>
+                      <Ellipsis />
+                      {nfcWriting ? "Zbliż tag NFC…" : "Więcej akcji"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56">
+                    <DropdownMenuItem onSelect={() => setActiveDialog("edit")}>
+                      Edytuj urządzenie
+                    </DropdownMenuItem>
+                    {authorized?.data && users?.data && (
+                      <DropdownMenuItem onSelect={() => setActiveDialog("auth")}>
+                        Upoważnienia
+                      </DropdownMenuItem>
+                    )}
+                    {isNfcAvailable() && (
+                      <DropdownMenuItem disabled={nfcWriting} onSelect={() => void writeNfc()}>
+                        <ScanLine />
+                        Zapisz tag NFC
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <a href={device.qr_url} target="_blank" rel="noreferrer">
+                        <ExternalLink />
+                        Link etykiety QR / NFC
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={() => setActiveDialog("withdraw")}>
+                      {withdrawn ? "Przywróć urządzenie" : "Wycofaj urządzenie"}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Action
                   label="Edytuj urządzenie"
                   fields={fields}
                   initial={device}
                   save={apiSave(path, token, "PATCH")}
                   after={after}
+                  hideTrigger
+                  open={activeDialog === "edit"}
+                  onOpenChange={(next) => setActiveDialog(next ? "edit" : null)}
                 />
                 <Action
                   label={withdrawn ? "Przywróć urządzenie" : "Wycofaj urządzenie"}
                   fields={withdrawFields}
                   save={apiSave(`${path}/${withdrawn ? "restore" : "withdraw"}`, token, "POST")}
                   after={after}
+                  hideTrigger
+                  open={activeDialog === "withdraw"}
+                  onOpenChange={(next) => setActiveDialog(next ? "withdraw" : null)}
                 />
                 {authorized?.data && users?.data && (
                   <Action
@@ -688,9 +725,19 @@ function EquipmentDetails({
                     initial={authorizationInitial}
                     save={apiSave(`${path}/authorized-users`, token, "PUT")}
                     after={after}
+                    hideTrigger
+                    open={activeDialog === "auth"}
+                    onOpenChange={(next) => setActiveDialog(next ? "auth" : null)}
                   />
                 )}
               </>
+            ) : (
+              <Button variant="outline" size="sm" asChild>
+                <a href={device.qr_url} target="_blank" rel="noreferrer">
+                  <ExternalLink />
+                  Link etykiety
+                </a>
+              </Button>
             )}
           </div>
           {device.acceptance_criteria != null && (

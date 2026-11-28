@@ -215,6 +215,18 @@ def request_calibration_ocr(images: list[bytes], *, cfg: OcrConfig) -> Calibrati
     )
 
     if response.status_code >= 400:
+        if response.status_code == 402:
+            raise AppError(
+                502,
+                "OCR_FAILED",
+                "Brak środków lub przekroczony limit konta dostawcy OCR",
+            )
+        if response.status_code in (401, 403) or "Invalid Auth key" in response.text:
+            raise AppError(
+                502,
+                "OCR_FAILED",
+                "Klucz API dostawcy OCR jest nieprawidłowy lub nieaktywny",
+            )
         raise AppError(502, "OCR_FAILED", "Dostawca OCR zwrócił błąd przetwarzania")
 
     try:

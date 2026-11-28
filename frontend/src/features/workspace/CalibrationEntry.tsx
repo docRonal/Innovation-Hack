@@ -48,51 +48,42 @@ export function CalibrationEntry({
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState("");
   const [draft, setDraft] = useState<Draft>();
+  const [draftSeq, setDraftSeq] = useState(0);
   const [points, setPoints] = useState([{ id: 0, value: blankPoint() }]);
   const [file, setFile] = useState<File>();
   const [attachment, setAttachment] = useState<{ id: number; filename: string }>();
   const path = `/equipment/${equipmentId}/calibrations`;
 
-  async function uploadCertificate() {
-    if (file === undefined) {
+  async function uploadCertificate(targetFile = file, currentAttachment = attachment) {
+    if (targetFile === undefined) {
       return undefined;
     }
-    if (attachment !== undefined) {
-      return attachment.id;
+    if (currentAttachment !== undefined) {
+      return currentAttachment.id;
     }
-    const saved = await upload(file, token);
+    const saved = await upload(targetFile, token);
     setAttachment(saved);
     return saved.id;
   }
 
-  async function captureCertificate() {
-    setBusy(true);
-    setError("");
-    try {
-      const photo = await capturePhoto();
-      if (photo === null) {
-        return;
-      }
-      setFile(new File([photo.blob], photo.filename, { type: photo.mimeType }));
-      setAttachment(undefined);
-      setDraft(undefined);
-    } finally {
-      setBusy(false);
+  async function runExtract(targetFile = file, currentAttachment = attachment) {
+    if (targetFile === undefined) {
+      return;
     }
-  }
-
-  async function extract() {
     setBusy(true);
+    setExtracting(true);
     setError("");
     try {
-      const id = await uploadCertificate();
+      const id = await uploadCertificate(targetFile, currentAttachment);
       if (id === undefined) {
         return;
       }
       const next = await api<Draft>(`${path}/extract`, token, "POST", { attachment_id: id });
       setDraft(next);
+      setDraftSeq((seq) => seq + 1);
       if (next.points.length) {
         setPoints(
           next.points.map((point, index) => ({
@@ -106,10 +97,33 @@ export function CalibrationEntry({
           })),
         );
       }
+      toast.success("Odczytano dane ze świadectwa (OCR)");
     } catch (failure) {
       setError(errorMessage(failure));
     } finally {
+      setExtracting(false);
       setBusy(false);
+    }
+  }
+
+  async function captureCertificate() {
+    setBusy(true);
+    setError("");
+    let captured: File | undefined;
+    try {
+      const photo = await capturePhoto();
+      if (photo === null) {
+        return;
+      }
+      captured = new File([photo.blob], photo.filename, { type: photo.mimeType });
+      setFile(captured);
+      setAttachment(undefined);
+      setDraft(undefined);
+    } finally {
+      setBusy(false);
+    }
+    if (captured !== undefined) {
+      await runExtract(captured, undefined);
     }
   }
 
@@ -191,6 +205,9 @@ export function CalibrationEntry({
                     setFile(value);
                     setAttachment(undefined);
                     setDraft(undefined);
+                    if (value !== undefined) {
+                      void runExtract(value, undefined);
+                    }
                   }}
                   disabled={busy}
                 />
@@ -204,23 +221,30 @@ export function CalibrationEntry({
                   <Camera />
                   Zrób zdjęcie
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={!file || busy}
-                  onClick={extract}
-                >
-                  <ScanText />
-                  Odczytaj świadectwo (OCR)
-                </Button>
+                {file !== undefined && !extracting && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => void runExtract()}
+                  >
+                    <ScanText />
+                    {draft ? "Ponów OCR" : "Odczytaj OCR"}
+                  </Button>
+                )}
               </div>
+              {extracting && (
+                <p className="text-xs font-medium text-brand-navy">
+                  Odczytywanie danych ze świadectwa (OCR)…
+                </p>
+              )}
             </Control>
           </div>
           {draft && (
             <Message>Sprawdź propozycje OCR ze świadectwem. {draft.warnings.join(" ")}</Message>
           )}
-          <div key={draft ? "ocr-draft" : "manual-draft"} className="grid gap-3 sm:grid-cols-2">
+          <div key={`draft-${draftSeq}`} className="grid gap-3 sm:grid-cols-2">
             <Control label="Miesiąc wzorcowania" htmlFor="cert-month">
               <Input
                 id="cert-month"

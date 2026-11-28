@@ -270,6 +270,9 @@ export function Action({
   primary = false,
   defaultOpen = false,
   submitLabel = "Zapisz",
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  hideTrigger = false,
 }: {
   label: string;
   description?: string;
@@ -280,8 +283,13 @@ export function Action({
   primary?: boolean;
   defaultOpen?: boolean;
   submitLabel?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
+  const open = controlledOpen ?? uncontrolledOpen;
+  const setOpen = controlledOnOpenChange ?? setUncontrolledOpen;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -315,11 +323,13 @@ export function Action({
         setOpen(next);
       }}
     >
-      <DialogTrigger asChild>
-        <Button type="button" variant={primary ? "default" : "outline"} size="sm">
-          {label}
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button type="button" variant={primary ? "default" : "outline"} size="sm">
+            {label}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{label}</DialogTitle>
