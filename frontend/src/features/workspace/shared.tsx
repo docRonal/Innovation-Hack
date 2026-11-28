@@ -42,7 +42,7 @@ export type Field = {
 };
 
 export const selectStyle =
-  "h-9 w-full rounded-md border border-input bg-card px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "h-10 w-full rounded-lg border border-input bg-card px-3 text-sm shadow-xs outline-none focus-visible:border-brand-navy focus-visible:ring-3 focus-visible:ring-brand-navy/15 sm:h-9";
 
 export function options(rows: ApiRecord[], label = "name"): Option[] {
   return rows.map((row) => ({ value: textValue(row.id), label: textValue(row[label]) }));
@@ -427,6 +427,7 @@ export function Rows({
                 className={cn(
                   "max-w-[35rem] whitespace-normal",
                   recordField,
+                  column === 0 && "font-medium text-brand-navy-ink",
                   column === 0 && recordTitle,
                 )}
               >
